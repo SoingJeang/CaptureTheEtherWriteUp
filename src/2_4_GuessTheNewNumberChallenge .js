@@ -5,7 +5,7 @@ const abiFile = './build/contracts/GuessTheNewNumberChallenge.json';
 const contractAddressCtf = "./build/contracts/CTFGuessTheNewNumber.json"
 const secrteFile = "../.secret"
 const mnemonicFile = "../iBpnG3uuUwI.csv"
-const ctfContract = "0x20F6106614ebC732451E87F7ffB6Fef714A0D677"
+const ctfContract = "0x882D0eC43e85dDbbCd874C2bB2337e3dB354B72c"
 const contractAddress = "0x7D5eD887Da99EdfA37B34D8A8606cCFF3032B3eA"
 
 let provider = utils.getNetProvider("3")
@@ -17,8 +17,10 @@ async function guess(contractCtf, contractChallange) {
     // var blockhash = ethers.utils.keccak256([blockNum], now)
     console.log("pre block num: " + blockNum)
 
-    let tx = await contractCtf.doCapture({value:ethers.utils.parseEther("1.0")})
-    // let tx = await contractCtf.dontHaveCap()
+    // let craeateInstance = await contractCtf.setGuessMeAddress(contractAddress)
+    // console.log("inout address success")
+    // let tx = await contractCtf.doCapture({value:ethers.utils.parseEther("1.0")})
+    let tx = await contractCtf.doCaptureByBlockNum(blockNum, {value:ethers.utils.parseEther("1")})
     console.log(tx)
 
     // let tc = await contractChallange.isComplete()
