@@ -5,8 +5,9 @@ const abiFile = './build/contracts/GuessTheNewNumberChallenge.json';
 const contractAddressCtf = "./build/contracts/CTFGuessTheNewNumber.json"
 const secrteFile = "../.secret"
 const mnemonicFile = "../iBpnG3uuUwI.csv"
-const ctfContract = "0x882D0eC43e85dDbbCd874C2bB2337e3dB354B72c"
-const contractAddress = "0x7D5eD887Da99EdfA37B34D8A8606cCFF3032B3eA"
+const ctfContract = "0x3ea487C051D308d235f86F27CC22E9f1Ad648a07"
+// 0xDb856EADFB53B71556464fdbB64880EBE5D91F88  0x837097659e7C8C53d7b615CF4fDC81E7d3a2A408
+const contractAddress = "0xe576aeE0c08928828B5EE45420B1e21fd9b19506"
 
 let provider = utils.getNetProvider("3")
 
@@ -14,35 +15,28 @@ let provider = utils.getNetProvider("3")
 async function guess(contractCtf, contractChallange) {
     // get 256 bit at position
     var blockNum = await provider.getBlockNumber()
-    // var blockhash = ethers.utils.keccak256([blockNum], now)
     console.log("pre block num: " + blockNum)
+    let lastAnswer = await contractCtf.lastAnswer()
+    console.log("last answer: " + lastAnswer)
 
     // let craeateInstance = await contractCtf.setGuessMeAddress(contractAddress)
     // console.log("inout address success")
-    // let tx = await contractCtf.doCapture({value:ethers.utils.parseEther("1.0")})
-    let tx = await contractCtf.doCaptureByBlockNum(blockNum, {value:ethers.utils.parseEther("1")})
-    console.log(tx)
-
-    // let tc = await contractChallange.isComplete()
-    // console.log(tc)
     
+    let tx = await contractCtf.doCapture({value:ethers.utils.parseEther("1.0")})
 
-    // for (let index = 0; index < 2 ** 8; index++) {
-    //     // let hash = ethers.utils.keccak256([index])
-    //     if(blockNum == index) {
-    //         // console.log("success")
-    //         // console.log([index])
-    //         // let tx = await contract.guess(index, {value:ethers.utils.parseEther("1.0")})
-    //     }
-    //     // console.log(hash)
-    // }
+    // next block exexute
+    let complete = await contractCtf.hasComplete()
+    console.log("iscomp  " + complete)
+    if (complete) {
+        await contractCtf.withDraw()
+    }
     
-    console.log("guess me success")
+    console.log("guess me done")
 }
 
 async function doValue() {
 
-    let wallet = utils.getPriKeyWallet(secrteFile)
+    let wallet = utils.getMnemonicWallet(mnemonicFile)
 
     let contract = utils.getContract(wallet, contractAddressCtf, ctfContract, provider)
     //let contractChallange = utils.getContract(wallet, abiFile, contractAddress, provider)

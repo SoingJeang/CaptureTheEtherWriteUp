@@ -31,6 +31,7 @@ function getNetWork(netId) {
             net = 'https://kovan.infura.io/v3/' + infuraKey
             break;
         default:
+            net = 'http://127.0.0.1:9545/'
             break;
     }
 

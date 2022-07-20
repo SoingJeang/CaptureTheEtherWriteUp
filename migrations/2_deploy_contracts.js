@@ -1,7 +1,8 @@
 const ethers = require('ethers')
 
-const CTFGuessTheNewNumber = artifacts.require("CTFGuessTheNewNumber");
+const CTFPredictTheBlockHashChallenge = artifacts.require("CTFPredictTheBlockHashChallenge");
 
 module.exports = function(deployer) {
-  deployer.deploy(CTFGuessTheNewNumber, {value:ethers.utils.parseEther("1.0")});
+  //deployer.deploy(CTFPredictTheFuture, {value:ethers.utils.parseEther('1.0')});
+  deployer.deploy(CTFPredictTheBlockHashChallenge);
 };
