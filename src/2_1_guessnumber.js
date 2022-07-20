@@ -4,7 +4,7 @@ const utils = require('./utils')
 const abiFile = './build/contracts/GuessTheNumberChallenge.json';
 const secrteFile = "../.secret"
 const mnemonicFile = "../iBpnG3uuUwI.csv"
-const contractAddress = "0xE6b820dB7C08AB894b3E3197706609213AA22dfF"
+const contractAddress = "0x576d2eCE39abe24Dbc898e7fD46D8dC90F6595f9"
 
 let provider = utils.getNetProvider("3")
 
@@ -16,7 +16,7 @@ async function guess(contract) {
 
 async function doValue() {
 
-    let wallet = utils.getPriKeyWallet(secrteFile)
+    let wallet = utils.getMnemonicWallet(mnemonicFile)
 
     let contract = utils.getContract(wallet, abiFile, contractAddress, provider)
 
