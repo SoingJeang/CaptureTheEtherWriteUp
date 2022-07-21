@@ -131,6 +131,12 @@ async function deployAnContract(wallet, abi, byteCode, contractname) {
     return contract
 }
 
+async function sleep(ms){
+    return new Promise(resolve=>{
+        setTimeout(resolve,ms)
+    })
+}
+
 async function attachToContract(wallet, abi, contractaddress) {
 
 }
@@ -143,5 +149,6 @@ module.exports = {
     getBalance,
     sendEther,
     deployAnContract,
-    attachToContract
+    attachToContract,
+    sleep
 }
