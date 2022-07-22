@@ -52,4 +52,8 @@ contract TokenWhaleChallenge {
         allowance[from][msg.sender] -= value;
         _transfer(to, value);
     }
+
+    function getApprove(address form, address spender) public view returns(uint){
+        return allowance[form][spender];
+    }
 }
