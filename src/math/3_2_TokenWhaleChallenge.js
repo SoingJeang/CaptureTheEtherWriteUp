@@ -2,12 +2,12 @@
  * @Author: Soingjeang
  * @Date: 2022-07-21 19:14:50
  * @LastEditors: SoingJeang
- * @LastEditTime: 2022-07-22 14:50:26
- * @FilePath: \CapTheEther\src\3_2_TokenWhaleChallenge.js
+ * @LastEditTime: 2022-07-25 18:56:19
+ * @FilePath: \CapTheEther\src\math\3_2_TokenWhaleChallenge.js
  */
 const ethers = require('ethers');
 const fs = require('fs');
-const utils = require('./utils')
+const utils = require('../utils')
 const abiFile = './build/contracts/TokenWhaleChallenge.json'; // fill
 const ctfAbi = './build/contracts/TokenWhaleChallenge.json'; // fill
 const secrteFile = "../.secret"

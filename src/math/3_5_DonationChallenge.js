@@ -1,15 +1,15 @@
 /*
  * @Author: Soingjeang
- * @Date: 2022-07-25 14:04:48
+ * @Date: 2022-07-25 18:57:14
  * @LastEditors: SoingJeang
- * @LastEditTime: 2022-07-25 14:07:21
- * @FilePath: \CapTheEther\src\3_4_MappingChallenge.js
+ * @LastEditTime: 2022-07-25 18:57:29
+ * @FilePath: \CapTheEther\src\math\3_5_DonationChallenge.js
  */
 const ethers = require('ethers');
 const fs = require('fs');
-const utils = require('./utils')
-const abiFile = './build/contracts/MappingChallenge.json'; // fill
-const ctfAbi = './build/contracts/MappingChallenge.json'; // fill
+const utils = require('../utils')
+const abiFile = './build/contracts/.json'; // fill
+const ctfAbi = './build/contracts/.json'; // fill
 const secrteFile = "../.secret"
 const mnemonicFile = "../iBpnG3uuUwI.csv"
 const ctfaddress = "" // fill
@@ -32,7 +32,7 @@ async function doCapture() {
     let contrateCtf = utils.getContract(wallet, ctfAbi, ctfaddress, provider)
     // console.log(contract)
     
-    guess(contrateCtf, contractChall)
+    guess(contrateCtf, contract)
 }
 
 doCapture()

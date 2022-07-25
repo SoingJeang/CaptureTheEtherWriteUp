@@ -1,6 +1,13 @@
+/*
+ * @Author: Soingjeang
+ * @Date: 2022-07-21 15:36:08
+ * @LastEditors: SoingJeang
+ * @LastEditTime: 2022-07-25 18:56:03
+ * @FilePath: \CapTheEther\src\math\3_1_TokenSaleChallenge.js
+ */
 const ethers = require('ethers');
 const fs = require('fs');
-const utils = require('./utils')
+const utils = require('../utils')
 const abiFile = './build/contracts/TokenSaleChallenge.json'; // fill
 const ctfAbi = './build/contracts/CTFTokenSaleChallenge.json'; // fill
 const secrteFile = "../.secret"

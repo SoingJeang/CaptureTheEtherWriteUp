@@ -2,12 +2,12 @@
  * @Author: Soingjeang
  * @Date: 2022-07-22 14:52:29
  * @LastEditors: SoingJeang
- * @LastEditTime: 2022-07-25 14:03:17
- * @FilePath: \CapTheEther\src\3_3_RetirementFundChallenge.js
+ * @LastEditTime: 2022-07-25 18:56:31
+ * @FilePath: \CapTheEther\src\math\3_3_RetirementFundChallenge.js
  */
 const ethers = require('ethers');
 const fs = require('fs');
-const utils = require('./utils')
+const utils = require('../utils')
 const abiFile = './build/contracts/RetirementFundChallenge.json'; // fill
 const ctfAbi = './build/contracts/CTFRetirementFundChallenge.json'; // fill
 const secrteFile = "../.secret"

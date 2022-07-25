@@ -1,6 +1,13 @@
+/*
+ * @Author: Soingjeang
+ * @Date: 2022-07-19 16:09:14
+ * @LastEditors: SoingJeang
+ * @LastEditTime: 2022-07-25 18:54:53
+ * @FilePath: \CapTheEther\src\lotteries\2_4_GuessTheNewNumberChallenge .js
+ */
 const ethers = require('ethers');
 const fs = require('fs');
-const utils = require('./utils')
+const utils = require('../utils')
 const abiFile = './build/contracts/GuessTheNewNumberChallenge.json';
 const contractAddressCtf = "./build/contracts/CTFGuessTheNewNumber.json"
 const secrteFile = "../.secret"

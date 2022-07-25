@@ -1,6 +1,6 @@
 pragma solidity ^0.4.21;
 
-contract MappingChallenge {
+contract CTFMappingChallenge {
     bool public isComplete;
     uint256[] map;
 
@@ -16,4 +16,11 @@ contract MappingChallenge {
     function get(uint256 key) public view returns (uint256) {
         return map[key];
     }
-}
+
+    function getSlot(uint _value) public view returns (uint256) {
+        uint256 nArraybegin = uint256(keccak256(_value));
+        uint256 nret = 2 ** 256 - 1;
+        nret = nret - nArraybegin + 1;
+        return nret;
+    }
+ }

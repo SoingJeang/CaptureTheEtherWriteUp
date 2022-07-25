@@ -1,6 +1,13 @@
+/*
+ * @Author: Soingjeang
+ * @Date: 2022-07-18 19:19:54
+ * @LastEditors: SoingJeang
+ * @LastEditTime: 2022-07-25 18:54:09
+ * @FilePath: \CapTheEther\src\lotteries\2_1_guessnumber.js
+ */
 const ethers = require('ethers');
 const fs = require('fs');
-const utils = require('./utils')
+const utils = require('../utils')
 const abiFile = './build/contracts/GuessTheNumberChallenge.json';
 const secrteFile = "../.secret"
 const mnemonicFile = "../iBpnG3uuUwI.csv"

@@ -1,6 +1,6 @@
 const ethers = require('ethers');
 const fs = require('fs');
-const utils = require('./utils')
+const utils = require('../utils')
 const abiFile = './build/contracts/GuessTheNumberChallenge.json';
 const ctfAbi = './build/contracts/CTFPredictTheFuture.json';
 const secrteFile = "../.secret"
