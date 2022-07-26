@@ -5,10 +5,10 @@ contract FiftyYearsChallenge {
         uint256 amount;
         uint256 unlockTimestamp;
     }
-    Contribution[] queue;
-    uint256 head;
+    Contribution[] queue;   // 0 amount change length
+    uint256 head;           // 1 will be modify by last timestamp
 
-    address owner;
+    address owner;          // 2
     function FiftyYearsChallenge(address player) public payable {
         require(msg.value == 1 ether);
 
@@ -32,8 +32,11 @@ contract FiftyYearsChallenge {
             // at least 1 day after the previous one.
             require(timestamp >= queue[queue.length - 1].unlockTimestamp + 1 days);
 
+            // 重新设置长度
             contribution.amount = msg.value;
+            // 重新设置head
             contribution.unlockTimestamp = timestamp;
+            // 先设置上个长度后放置，所以长度 + 1
             queue.push(contribution);
         }
     }
@@ -56,5 +59,25 @@ contract FiftyYearsChallenge {
         head = index + 1;
 
         msg.sender.transfer(total);
+    }
+
+    function getBlockamount(uint256 _nIndex) public view returns(uint256) {
+        return queue[_nIndex].amount;
+    }
+
+    function getBlocktimestamp(uint256 _nIndex) public view returns(uint256) {
+        return queue[_nIndex].unlockTimestamp;
+    }
+
+    function getOwnne() public view returns(address) {
+        return owner;
+    }
+
+    function getHead() public view returns(uint256) {
+        return head;
+    }
+
+    function getLength() public view returns(uint256) {
+        return queue.length;
     }
 }
