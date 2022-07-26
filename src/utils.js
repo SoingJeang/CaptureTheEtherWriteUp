@@ -1,6 +1,8 @@
 const ethers = require('ethers');
 const fs = require('fs');
 // const BigNumber = require('BigNumber')
+const menCount = "0xc160349854efcc1a7b6a55fc4b8df866a06d808d2a80fab80d71c421f743851b"
+const otherCount = "0x1eb142ab35a0bf7ec1bc655e6a7629bdd06db3353517466cc3403097764521d7"
 
 function getNetWork(netId) {
     let infuraKey = fs.readFileSync("../.infuraKey").toString().trim();
@@ -44,8 +46,14 @@ function getString(priKeyPath) {
     return privKey
 }
 
-function getNetProvider(netId) {
-    let network = getNetWork(netId)
+function getNetProvider(netId, localtest) {
+    var network
+    if (localtest) {
+        network = getNetWork("localtest")
+    }
+    else {
+        network = getNetWork(netId)
+    }
     return new ethers.providers.JsonRpcProvider(network)
 }
 
@@ -59,26 +67,34 @@ function getContract(wallet, abiFile, contractAddress, provider) {
     return new ethers.Contract(contractAddress, abi, wallet)
 }
 
-function getMnemonicWallet(mnemonicFile) {
-    let walletPath = {
-        "standard": "m/44'/60'/0'/0/0",
+function getMnemonicWallet(mnemonicFile, localtest) {
+    if (localtest) {
+        return new ethers.Wallet(menCount)
+    } else {
+        let walletPath = {
+            "standard": "m/44'/60'/0'/0/0",
+        
+            // @TODO: Include some non-standard wallet paths
+        };
     
-        // @TODO: Include some non-standard wallet paths
-    };
-
-    let mnemonic = fs.readFileSync(mnemonicFile).toString().trim()
-    // let hdnode = ethers.HDNode.fromMnemonic(mnemonic)
-    // let node = hdnode.derivePath(walletPath.standard)
-
-    // return new ethers.Wallet(node.privateKey)
-
-    let secondMnemonicWallet = ethers.Wallet.fromMnemonic(mnemonic, walletPath.standard)
-    return secondMnemonicWallet
+        let mnemonic = fs.readFileSync(mnemonicFile).toString().trim()
+        // let hdnode = ethers.HDNode.fromMnemonic(mnemonic)
+        // let node = hdnode.derivePath(walletPath.standard)
+    
+        // return new ethers.Wallet(node.privateKey)
+        let secondMnemonicWallet = ethers.Wallet.fromMnemonic(mnemonic, walletPath.standard)
+        return secondMnemonicWallet
+    }
 }
 
-function getPriKeyWallet(srcretFile) {
-    var privateKey = getString(srcretFile)
-    return new ethers.Wallet(privateKey)
+function getPriKeyWallet(srcretFile, localtest) {
+    if (localtest) {
+        return new ethers.Wallet(otherCount)
+    }
+    else {
+        var privateKey = getString(srcretFile)
+        return new ethers.Wallet(privateKey)
+    }
 }
 
 async function getBalance(wallet) {

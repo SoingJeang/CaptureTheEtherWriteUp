@@ -36,4 +36,10 @@ contract DonationChallenge {
         
         msg.sender.transfer(address(this).balance);
     }
+
+    function checkDonate(uint256 etherAmount) public view returns(uint256) {
+        uint256 scale = 10**18 * 1 ether;
+        uint256 check = etherAmount / scale;
+        return check;
+    }
 }

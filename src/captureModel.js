@@ -2,20 +2,24 @@
  * @Author: Soingjeang
  * @Date: 2022-07-21 14:49:07
  * @LastEditors: SoingJeang
- * @LastEditTime: 2022-07-25 18:57:35
+ * @LastEditTime: 2022-07-26 11:42:25
  * @FilePath: \CapTheEther\src\captureModel.js
  */
 const ethers = require('ethers');
 const fs = require('fs');
-const utils = require('./utils')
+const utils = require('../utils')
 const abiFile = './build/contracts/.json'; // fill
 const ctfAbi = './build/contracts/.json'; // fill
 const secrteFile = "../.secret"
 const mnemonicFile = "../iBpnG3uuUwI.csv"
 const ctfaddress = "" // fill
 const contractChallangeAddress = "" // fill
+const localChallange = "" //fill
+const localctf = "" //fill
 
-let provider = utils.getNetProvider("3")
+var localtest = 0  //fill
+
+let provider = utils.getNetProvider("3", localtest)
 
 
 async function guess(contractCtf, contractChallenge) {
@@ -26,11 +30,18 @@ async function guess(contractCtf, contractChallenge) {
 
 async function doCapture() {
 
-    let wallet = utils.getMnemonicWallet(mnemonicFile)
+    let wallet = utils.getMnemonicWallet(mnemonicFile, localtest)
 
-    let contractChall = utils.getContract(wallet, abiFile, contractChallangeAddress, provider)
-    let contrateCtf = utils.getContract(wallet, ctfAbi, ctfaddress, provider)
-    // console.log(contract)
+    var contractChall
+    var contrateCtf
+    if (localtest) {
+        contractChall = utils.getContract(wallet, abiFile, localChallange, provider)
+        contrateCtf = utils.getContract(wallet, ctfAbi, localctf, provider)
+    }
+    else {
+        contractChall = utils.getContract(wallet, abiFile, contractChallangeAddress, provider)
+        contrateCtf = utils.getContract(wallet, ctfAbi, ctfaddress, provider)
+    }
     
     guess(contrateCtf, contractChall)
 }
