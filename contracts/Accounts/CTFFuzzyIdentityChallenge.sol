@@ -16,5 +16,3 @@ contract CTFFuzzyIdentityChallenge {
         fuzzy.authenticate();
     }
 }
-
-0x90907ccbad0ee25e38defd6e54badc0de923ef57
