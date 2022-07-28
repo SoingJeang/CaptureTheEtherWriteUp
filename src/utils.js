@@ -97,6 +97,18 @@ function getPriKeyWallet(srcretFile, localtest) {
     }
 }
 
+function getWalletFromPriKey(prikey) {
+    return new ethers.Wallet(prikey)
+}
+
+function getAbiValue(abiFile, valueName) {
+    var abiStr = fs.readFileSync(abiFile)
+    var abiJson = JSON.parse(abiStr)
+    var abi = abiJson[valueName]
+
+    return abi
+}
+
 async function getBalance(wallet) {
     let balancePromise = wallet.getBalance()
     balancePromise.then((balance) => {
@@ -139,10 +151,10 @@ async function sendEther(wallet, value, to, network_id) {
 // }
 }
 
-async function deployAnContract(wallet, abi, byteCode, contractname) {
-    let factory = new ethers.ContractFactory(abi, byteCode, wallet)
-    let contract = await factory.deploy(contractname)
-
+async function deployAnContract(wallet, abis, byteCodes, contractname) {
+    let factory = new ethers.ContractFactory(abis, byteCodes, wallet)
+    // let factory = new ethers.getContractFactory('./build/contracts/CTFFuzzyIdentityChallenge.json')
+    let contract = await factory.deploy({gasLimit:1000000})
     await contract.deployed()
     return contract
 }
@@ -162,6 +174,8 @@ module.exports = {
     getContract,
     getMnemonicWallet,
     getPriKeyWallet,
+    getWalletFromPriKey,
+    getAbiValue,
     getBalance,
     sendEther,
     deployAnContract,
