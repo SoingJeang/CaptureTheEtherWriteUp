@@ -19,7 +19,7 @@ contract CTFPublicKeyChallenge {
         return calcAddr;
     }
 
-    function doRecoverByString(string _hash, string _r, string _s, byte _v) public view returns(address){
+    function doRecoverByString(string _hash, string _r, string _s, byte _v) public returns(address){
         uint8 newV = uint8(_v);
         bytes32 newR = stringToBytes32(_r);
         bytes32 newS = stringToBytes32(_s);
@@ -29,6 +29,7 @@ contract CTFPublicKeyChallenge {
         sS = newS;
         sV = newV;
         address calcAddr = ecrecover(newHash, newV, newR, newS);
+        publicAddress = calcAddr;
         return calcAddr;
     }
 
@@ -41,5 +42,10 @@ contract CTFPublicKeyChallenge {
         assembly {
             result := mload(add(source, 32))
         }
+    }
+
+    function calcPublicAddress(bytes publicAddr) public view returns(address) {
+        address pubAddr = address(keccak256(publicAddr));
+        return pubAddr;
     }
 }

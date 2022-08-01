@@ -97,6 +97,13 @@ function getPriKeyWallet(srcretFile, localtest) {
     }
 }
 
+function calcVSignature(v, chainId ) {
+    if (chainId > 0) {
+        vNew = v - chainId * 2 + 8
+    }
+    return vNew
+} 
+
 function getWalletFromPriKey(prikey) {
     return new ethers.Wallet(prikey)
 }
@@ -174,6 +181,7 @@ module.exports = {
     getContract,
     getMnemonicWallet,
     getPriKeyWallet,
+    calcVSignature,
     getWalletFromPriKey,
     getAbiValue,
     getBalance,
