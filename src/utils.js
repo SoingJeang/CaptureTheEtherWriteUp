@@ -116,6 +116,19 @@ function getAbiValue(abiFile, valueName) {
     return abi
 }
 
+function mulInverse(a, b) {
+    if (!b) {
+        return {x:1, y:0}
+    }
+    else{
+        back = mulInverse(b ,a % b)
+        const middle = back.y
+        var inverseY = back.x - parseInt(a/b) * back.y
+        var inverseX = middle
+        return {x:inverseX, y:inverseY}
+    }
+}
+
 async function getBalance(wallet) {
     let balancePromise = wallet.getBalance()
     balancePromise.then((balance) => {
@@ -176,12 +189,14 @@ async function attachToContract(wallet, abi, contractaddress) {
 
 }
 
+
 module.exports = {
     getNetProvider,
     getContract,
     getMnemonicWallet,
     getPriKeyWallet,
     calcVSignature,
+    mulInverse,
     getWalletFromPriKey,
     getAbiValue,
     getBalance,

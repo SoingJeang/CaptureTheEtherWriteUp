@@ -2,7 +2,7 @@
  * @Author: Soingjeang
  * @Date: 2022-07-21 14:49:07
  * @LastEditors: SoingJeang
- * @LastEditTime: 2022-08-01 16:42:09
+ * @LastEditTime: 2022-08-01 18:27:58
  * @FilePath: \CapTheEther\src\accounts\4_3_AccountTakeoverChallenge.js
  */
 const ethers = require('ethers');
@@ -16,19 +16,90 @@ const ctfaddress = "" // fill
 const contractChallangeAddress = "0xCEc1399D0b4BA9543829134d22B94F6312886AAA" // fill
 const localChallange = "" //fill
 const localctf = "" //fill
+const tranactions = {
+    first: "0xd79fc80e7b787802602f3317b7fe67765c14a7d40c3e0dcb266e63657f881396",
+    second: "0x061bf0b4b5fdb64ac475795e9bc5a3978f985919ce6747ce2cfbbcaccaf51009"
+}
 
 var localtest = 0  //fill
 
 let provider = utils.getNetProvider("3", localtest)
 
+async function getTranContentHash(tranInfo) {
+    const txOriginData = {
+        gasPrice: tranInfo.gasPrice,
+        gasLimit: tranInfo.gasLimit,
+        value: tranInfo.value,
+        nonce: tranInfo.nonce,
+        data: tranInfo.data,
+        chainId: tranInfo.chainId,
+        to: tranInfo.to
+    }
+    const rsTx = await ethers.utils.resolveProperties(txOriginData)
+    const rawTx = ethers.utils.serializeTransaction(rsTx)
+    const msgHash = ethers.utils.keccak256(rawTx)
+
+    return msgHash
+}
+
+function bigNumberMulMod(a, b, m) {
+    temp = a
+    for (let index = 0; index < b - 1; index++) {
+        temp = temp.add(a)
+        temp = temp.mod(m)
+    }
+
+    return temp
+}
 
 async function guess(contractCtf, contractChallenge) {
-    // transactionHash = '0x5e447fd466ac50da8bafcc5cbf471d03206f7984102962e3d298a163e9fec7c3'
-    transactionHash = '0xe6b94c8cb3c27b40fed56117b806fe5335bd692af5bbfe9c01fd37610f5343f2'
-    let tranInfo = await provider.getTransaction(transactionHash)
-        console.log(tranInfo)
+    firstTranInfo = await provider.getTransaction(tranactions.first)
+    SecondTranInfo = await provider.getTransaction(tranactions.second)
+    r = ethers.BigNumber.from(firstTranInfo.r)
+    p = ethers.BigNumber.from("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141")
+
+    fristS = ethers.BigNumber.from(firstTranInfo.s)
+    fristS = fristS.mod(p)
+    secondS = ethers.BigNumber.from(SecondTranInfo.s)
+    secondS = secondS.mod(p)
+    firstZ = await getTranContentHash(firstTranInfo)
+    firstZ = ethers.BigNumber.from(firstZ)
+    secondZ = await getTranContentHash(SecondTranInfo)
+    secondZ = ethers.BigNumber.from(secondZ)
+    s = secondS.sub(fristS)
+    z = secondZ.sub(firstZ)
+    
+    calInverS = utils.mulInverse(s,p)
+    calInverR = utils.mulInverse(r,p)
+    let inverS = calInverS.x
+    if (inverS < 0 ){
+        inverS += p
+    }
+    let inverR = calInverR.x
+    if (inverR < 0){
+        inverR += p
+    }
+    console.log("inverS: " + inverS + "  inverR: " + inverR)
+    k = bigNumberMulMod(z, inverS, p)
+    console.log(" net: " + k)
+    while (k > p){
+        k -= p
+    }
+    console.log(k)
+    while (k < 0){
+        k += p
+    }
+    console.log(k)
+    
+    var temp = fristS
+    for (let index = 0; index < k - 1; index++) {
+        temp = temp.add(fristS)
+        temp = temp.mod(p) 
+    }
+    console.log(temp)
+    privKeyCheck = ((secondS * k - secondZ) * r) % p
         
-    console.log("uess me success")
+    console.log("k: " + k + " privKey: " + privKey + "  privKeyCheck: " + privKeyCheck)
 }
 
 async function doCapture() {
