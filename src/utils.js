@@ -116,17 +116,27 @@ function getAbiValue(abiFile, valueName) {
     return abi
 }
 
-function mulInverse(a, b) {
-    if (!b) {
-        return {x:1, y:0}
+function mulInverse(u, v) {
+    var u3 = u
+    var v3 = v
+    var u1 = ethers.BigNumber.from(1)
+    var v1 = ethers.BigNumber.from(0)
+    while (v3 > 0){
+        q = u3 // v3
+        v1 = u1.sub(v1.mul(q))
+        u1 = v1
+        v3 = u3.sub(v3.mul(q))
+        u3 = v3 
     }
-    else{
-        back = mulInverse(b ,a % b)
-        const middle = back.y
-        var inverseY = back.x - parseInt(a/b) * back.y
-        var inverseX = middle
-        return {x:inverseX, y:inverseY}
+    //console.log(u1)
+    while (u1 < 0) {
+        console.log(u1)
+        u1 = u1.add(v)
     }
+        
+    console.log("end")
+
+    return u1
 }
 
 async function getBalance(wallet) {

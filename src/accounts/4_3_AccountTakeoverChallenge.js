@@ -2,7 +2,7 @@
  * @Author: Soingjeang
  * @Date: 2022-07-21 14:49:07
  * @LastEditors: SoingJeang
- * @LastEditTime: 2022-08-01 18:27:58
+ * @LastEditTime: 2022-08-02 15:04:45
  * @FilePath: \CapTheEther\src\accounts\4_3_AccountTakeoverChallenge.js
  */
 const ethers = require('ethers');
@@ -44,62 +44,81 @@ async function getTranContentHash(tranInfo) {
 
 function bigNumberMulMod(a, b, m) {
     temp = a
-    for (let index = 0; index < b - 1; index++) {
-        temp = temp.add(a)
+    const nomal = 1000000000
+    last = b.mod(nomal)
+
+    for (let index = ethers.BigNumber.from(0); index.lt(b.sub(nomal)); ) {
+        temp = temp.mul(a.mul(nomal))
         temp = temp.mod(m)
+        index = index.add(nomal) 
+        
+        // if (index.mod(10000000000) == 0) {
+        //     console.log(index)
+        //     console.log(b)
+        // }
     }
 
     return temp
 }
 
 async function guess(contractCtf, contractChallenge) {
-    firstTranInfo = await provider.getTransaction(tranactions.first)
-    SecondTranInfo = await provider.getTransaction(tranactions.second)
-    r = ethers.BigNumber.from(firstTranInfo.r)
-    p = ethers.BigNumber.from("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141")
+    // firstTranInfo = await provider.getTransaction(tranactions.first)
+    // SecondTranInfo = await provider.getTransaction(tranactions.second)
+    // r = ethers.BigNumber.from(firstTranInfo.r)
+    
 
-    fristS = ethers.BigNumber.from(firstTranInfo.s)
-    fristS = fristS.mod(p)
-    secondS = ethers.BigNumber.from(SecondTranInfo.s)
-    secondS = secondS.mod(p)
-    firstZ = await getTranContentHash(firstTranInfo)
+    // fristS = firstTranInfo.s
+    // secondS = SecondTranInfo.s
+    // firstZ = await getTranContentHash(firstTranInfo)
+    // firstZ = ethers.BigNumber.from(firstZ)
+    // secondZ = await getTranContentHash(SecondTranInfo)
+    // secondZ = ethers.BigNumber.from(secondZ)
+    r = "0x69a726edfb4b802cbf267d5fd1dabcea39d3d7b4bf62b9eeaeba387606167166"
+    p = ethers.BigNumber.from("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141")
+    fristS = "0x2bbd9c2a6285c2b43e728b17bda36a81653dd5f4612a2e0aefdb48043c5108de"
+    secondS = "0x7724cedeb923f374bef4e05c97426a918123cc4fec7b07903839f12517e1b3c8"
+    firstZ = "0x4f6a8370a435a27724bbc163419042d71b6dcbeb61c060cc6816cda93f57860c"
+    secondZ = "0x350f3ee8007d817fbd7349c477507f923c4682b3e69bd1df5fbb93b39beb1e04"
+    fristS = ethers.BigNumber.from(fristS)
+    secondS = ethers.BigNumber.from(secondS)
     firstZ = ethers.BigNumber.from(firstZ)
-    secondZ = await getTranContentHash(SecondTranInfo)
     secondZ = ethers.BigNumber.from(secondZ)
     s = secondS.sub(fristS)
     z = secondZ.sub(firstZ)
+    r = ethers.BigNumber.from(r)
     
-    calInverS = utils.mulInverse(s,p)
-    calInverR = utils.mulInverse(r,p)
-    let inverS = calInverS.x
-    if (inverS < 0 ){
-        inverS += p
-    }
-    let inverR = calInverR.x
-    if (inverR < 0){
-        inverR += p
-    }
+    let inverS = utils.mulInverse(s,p)
+    let inverR = utils.mulInverse(r,p)
+    // let inverS = ethers.BigNumber.from(calInverS.x)
+    // if (inverS < 0 ){
+    //     inverS += p
+    // }
+    // let inverR = ethers.BigNumber.from(calInverR.x)
+    // if (inverR < 0){
+    //     inverR += p
+    // }
     console.log("inverS: " + inverS + "  inverR: " + inverR)
-    k = bigNumberMulMod(z, inverS, p)
-    console.log(" net: " + k)
-    while (k > p){
-        k -= p
-    }
+    console.log(inverS)
+    console.log(inverR)
+    k = (z.mul(inverS)) 
+    k = k.mod(p)
     console.log(k)
-    while (k < 0){
-        k += p
-    }
-    console.log(k)
-    
-    var temp = fristS
-    for (let index = 0; index < k - 1; index++) {
-        temp = temp.add(fristS)
-        temp = temp.mod(p) 
-    }
-    console.log(temp)
-    privKeyCheck = ((secondS * k - secondZ) * r) % p
+
+    temp = fristS.mul(k).mod(p)
+    temp = temp.sub(firstZ)
+    temp = temp.mul(r).mod(p)
+    privKey = ((fristS * k - firstZ) * r) % p
+    privKey = (((fristS.mul(k)).sub(firstZ)).mul(r)).mod(p)
+    privKeyCheck = secondS.mul(k).sub(secondZ).mul(r).mod(p)
+    console.log(privKey)
+    console.log(privKeyCheck)
         
-    console.log("k: " + k + " privKey: " + privKey + "  privKeyCheck: " + privKeyCheck)
+    console.log(" privKey: " + privKey + "  privKeyCheck: " + privKeyCheck)
+
+    privKey = "0x614f5e36cd55ddab0947d1723693fef5456e5bee24738ba90bd33c0c6e68e269"
+    walletPri = new ethers.Wallet(privKey)
+    contractPri = utils.getContract(walletPri, abiFile, contractChallangeAddress, provider)
+    await contractPri.authenticate()
 }
 
 async function doCapture() {
@@ -145,3 +164,6 @@ doCapture()
 // privKey = ((s1 * k - z1) * r(-1)) mod p
 // 可用 公式 4进行验证
 // privKey = ((s2 * k - z2) * r(-1)) mod p
+// 0x614f5e36cd55ddab0947d1723693fef5456e5bee24738ba90bd33c0c6e68e269
+// 0x973985b7581c9276cceb6ea6bdf7c76f010eb9f06c0e3f3cd62c36a201081234
+// 0xc48d7c9bbfce69c9355dfe640736b575e48b2647018b22cd92b50a6a780f91a7
