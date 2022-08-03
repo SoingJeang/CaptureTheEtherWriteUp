@@ -56,6 +56,14 @@ contract SimpleERC223Token {
         return true;
     }
 
+    function getApprove(address to) public view returns (uint256) {
+        return allowance[msg.sender][to];
+    }
+
+    function getbalance(address to) public view returns (uint256) {
+        return balanceOf[to];
+    }
+
     event Approval(
         address indexed owner,
         address indexed spender,
@@ -109,7 +117,7 @@ contract TokenBankChallenge {
     }
 
     function tokenFallback(
-        address from,           //send to contract  
+        address from,         
         uint256 value,
         bytes
     ) public {
