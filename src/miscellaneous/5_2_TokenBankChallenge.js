@@ -33,7 +33,7 @@ async function guess(contractCtf, contractChallenge, wallet) {
     const SimpleERC223TokenAbi = './build/contracts/SimpleERC223Token.json'
     let contrateToken = utils.getContract(wallet, SimpleERC223TokenAbi, tokenAddress, provider)
 
-    trans = 3
+    trans = 1
     comp = await contractChallenge.isComplete()
     console.log("complete: " + comp)
     if (!comp) {
