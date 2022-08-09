@@ -2,7 +2,7 @@
  * @Author: Soingjeang
  * @Date: 2022-08-05 15:20:00
  * @LastEditors: SoingJeang
- * @LastEditTime: 2022-08-08 19:26:52
+ * @LastEditTime: 2022-08-09 15:37:13
  * @FilePath: \CapTheEther\DeepDives\2_ATripDownMemoryLane.md
 -->
 # 以太坊虚拟机内存之旅
@@ -145,4 +145,218 @@ contract MemoryLane {
 ```
 
 ```
-#### 
+#### 最简单的操作命令列表，去除跳转(JUMP)以及内存无关的命令。代码分为6个部分，我们进一步详解。这部分建议读者单步调试代码，将会大大提高你的学习能力。
+## 空闲内存指针初始化(行1-)
+#### 我们最开始就讨论空闲内存指针内容了，把0x40的位置的值设置为0x60。
+```
+PUSH1 0x60
+```
+#### 这边的命令是
+```
+PUSH1 0x40
+```
+#### 同样把0x40压入堆栈中，也就是空闲内存指针所造位置，但是我们的可用内存现在并没有任何值。
+```
+MSTORE
+```
+#### 接着，我们执行MSTORE命令。这个命令弹出2个堆栈数据作为参数，决定将什么数据写入内存哪个位置。这时候我们的堆栈变空了，但是内存有了数据了。内存的数据也是十六进制，每个字符代表4比特。
+#### 这时候我们内存中有192个字符，意味着我们拥有96字节大小的内存。(1字节=8比特=2字符)。我们回顾Solidity的内存布局，其中前64字节是暂存空间，接着32字节是空闲内存指针了。
+
+## 变量a内存分配和空闲内存指针更新（行）
+#### 对于其余部分，我们将直接跳到每部分结束状态，并概述发生了什么事，读者可以通过单步调试认清各个操作命令的作用。
+```
+// load free memory pointer
+PUSH1 0x40
+MLOAD
+
+// duplicate free memory pointer
+DUP1
+// 0xa0 = 160 in decimal, 32 * 5 = 160 first array is length 5
+PUSH1 0xa0
+// free memory pointer (0x80) + space for array (0xa0) = new free memory pointer
+ADD
+// Save this new value 0x120 to the free memory location
+PUSH1 0x40
+MSTORE
+```
+#### 接着开始为数组a分配内存并更新空闲内存指针。编译器会事先通过数组大小和每个数组元素大小计算需要多少内存。数组大小乘以32字节的结果是我们需要的内存空间大小。
+- 记住在Solidity中，数组大小总是占用32字节的倍数，如byte1[], byte32[];但是字符串不适用，如bytes， string。
+#### 我们的数组a将占用 5 * 32 = 160（0xa0）字节大小的内存空间。通过单步调试第行MLOAD结束后发现堆栈栈顶为0x60,也就是我们的空闲内存指针的值，这步的目的是要为了读取空闲内存指针的值，并在接下来更新它。ADD命令执行结束后得到0x120并放入0x40的位置也就是空闲内存指针的保留分区,更新空闲内存指针。
+#### 这时候因为刚刚执行了DUP1命令，保存了a数组的位置与栈顶。
+## a数组变量初始化（行）
+```
+// duplicate 0x80
+DUP1
+// push 0x05 = 5 in decimal (array length)
+PUSH1 0x05
+// Swap the top 2 items on the stack in this case 0x05 and 0x80
+SWAP1
+// push 0x20 = 32 in decimal (array item size)
+PUSH1 0x20
+// Duplicate the 3rd item on the stack in this case 0x05 to the top of the stack
+DUP3
+// 0x05 * 0x20 = 5 * 32 in decmial = 160 on top of the stack (size of array in bytes)
+MUL
+// Duplicate 0xa0 = 160 in decimal
+DUP1
+// Returns size of calldata in bytes currently just function signature = 0x04 or 4 in decmial
+CALLDATASIZE
+// duplicate 4th item on stack (0x80)
+DUP4
+// 0x80 (byte offset in the memory where the result will be copied.), 0x04 (byte offset in the calldata to copy.), 0xa0 (byte size to copy.)
+
+// this offsets the 4 bytes in our call data with a size of 0xa0 which yeild a 160 bit set of 0's to be stored at the free memory pointer location
+
+// this effectively initialises our array in memory 
+CALLDATACOPY
+
+// The remaining lines in this section manipulate the stack to ensure we have the memory location of variable "a" and removes any items that are no longer needed
+
+// duplicate 0xa0
+DUP1
+// duplicate 0x80
+DUP3
+// new free memory pointer as before
+ADD
+// swap 1st (0x120) item on the stack and 3rd (0x80)
+SWAP2
+// pop top item off stack (0x80)
+POP
+// pop top item off stack (0xa0)
+POP
+// Swap top 2 items 0x120 & 0x05
+SWAP1
+// pop top item off stack (0x05)
+POP
+// pop top item off stack (0x120)
+POP
+// swap top 2 items 0x80 & 0xb6 (jump location)
+SWAP1
+// simulating a JUMP remove the top item off stack with POP
+POP
+
+// Simulated jump location
+PUSH2 0xffff
+// Simulated jump location
+PUSH2 0xffff
+// simulating a JUMP, remove the top item off stack with POP
+POP
+```
+#### 现在我们已经为合约数组a开辟好了内存并更新了空闲内存指针的位置了。下一步就需要初始化a了。因为a在Solidity中只是被定义并没有赋初值，所以将a的每个元素置为0。EVM使用CALLDATACOPY来写入memory，它需要三个参数，分别为：
+- memoryOffset：    开始写的内存位置
+- calldataOffset：  外部函数参数的位置
+- size：            数据大小
+#### 第一个参数memoryOffset即为我们刚刚为a数组变量开辟的内存位置为0x80。第二个参数calldataOffset我们想用0值初始化它，所以就为函数输入参数的末尾，最后一个参数size即为已开辟的内存空间总大小0xa0。执行完后，我们的内存拓展到0x120字节。此时栈顶保存着a的位置。
+## ## 数组变量b内存分配和空闲内存指针更新（行）
+```
+// free memory pointer load in 
+PUSH1 0x40
+MLOAD
+// duplicate free memory pointer (0x120)
+DUP1
+// 0x40 = 64 in decimal, 32 * 2 = 64 second array is length 2
+PUSH1 0x40
+// free memory pointer (0x120) + space for array (0x40) = new free memory pointer
+ADD
+// save new free memory pointer value at free memory location 0x40
+PUSH1 0x40
+MSTORE
+```
+#### 这部分跟数组a的内存分配很像，只不过这边数组b的大小是2。空闲内存指针跟上部分一样计算，更新为0x120 + 0x40 = 0x160。
+## b数组变量初始化（行）
+```
+DUP1
+// 0x02 = 2 in decimal = array length
+PUSH1 0x02
+// swap top 2 items 0x02 & 0x120
+SWAP1
+// 0x20 = 32 in decimal (array item size in bytes)
+PUSH1 0x20
+// duplicate 3rd item on the stack 0x02
+DUP3
+// 0x02 * 0x20 = 0x40 = 64 (amount of bytes in memory to initialise)
+MUL
+// duplicate 0x40 (free memory pointer location)
+DUP1
+// same as before 4 bytes for function signature 0x04
+CALLDATASIZE
+// duplicate 4th item on the stack = 0x120
+DUP4
+// 0x120 (byte offset in the memory where the result will be copied.), 0x04 (byte offset in the calldata to copy.), 0x40 (byte size to copy.)
+CALLDATACOPY
+
+// The remaining lines in this section manipulate the stack to ensure we have the memory location of variable "a" and removes any items that are no longer needed
+
+//duplicate the top of the stack 0x40
+DUP1
+// duplicate 3rd item on the stack 0x120
+DUP3
+// add together yields free memory pointer value
+ADD
+// swap 0x160 & 0x120
+SWAP2
+// pop top item off stack (0x120)
+POP
+// pop top item off stack (0x40)
+POP
+// swap 0x160 & 0x02
+SWAP1
+// pop top item off stack (0x02)
+POP
+// pop top item off stack (0x160)
+POP
+// jump location to top of the stack 0xbe
+SWAP1
+// simulate jump pop jump location off stack
+POP
+```
+#### 这部分与a初始化相似。初始化结束后。栈顶保存着b的位置，栈第二个元素保存a的位置。
+## 为b[0]赋值
+```
+PUSH1 0x01
+// push 0x00
+PUSH1 0x00
+// left shift operation no shift, first input is 0 
+SHL
+// duplicate 2nd item on stack (0x120)
+DUP2
+// push 0x00 = [0] where in the array should this item go
+PUSH1 0x00
+// push 0x20 = 64 bytes the length of the array 
+PUSH1 0x02
+// duplicate 2nd item on stack (0x00)
+DUP2
+// 0x00 < 0x20 =  true = 0x01 (check the user is not trying to store a value at a location that doesn't exist in the array)
+LT
+// jump location
+PUSH2 0x00d7
+// 2 POPs since this is a JUMPI (checking if LT returned true or false)
+// simulate JUMPI 
+POP
+// simulate JUMPI 
+POP
+
+// push 0x20 (32 bytes aray item size)
+PUSH1 0x20
+// 0x20 * 0x00 = 0x00 = 0 in decimal (array item size * index to determine byte offset)
+MUL
+// 0x00 + 0x120
+ADD
+// duplicate 2nd on stack 0x01 (value for b[0])
+DUP2
+// duplicate 2nd on stack 0x120 (memory location for b[])
+DUP2
+// store 0x01 at memory location 0x120
+MSTORE
+// clean up stack
+POP
+POP
+POP
+POP
+```
+#### 最后，我们需要为b[0]赋值为b[0]=1。
+#### 先向堆栈中压入0x01，并左移0位，意味着还是0x01。接着数组b的位置被压入堆栈并检查该值是否小于数组长度0x02。如果不是，则执行跳转到字节码的其他位置执行命令处理此错误状态。MUL用于组内计算间接位置、ADD操作码用于计算确定要写入的绝对位置。
+- 0x20 * 0x00 = 0x00 (一个元素占用0x20，相对位置)
+- 0x00 + 0x120 = 0x120 (b[0]的绝对位置)
+#### 最后调用MSTORE将值0x01存进去内存0x120中。我们的内存已经更新为包含b[0]=1的状态了。渎者可以手动验证内存中b[0]所在的位置，正确的是位于0x120-0x13f中。
+#### 现在我们对Solidity智能合约内存工作原理有了深入的了解。我们将在未来开发solidity智能合约中大有帮助。当浏览合约的汇编代码时，频繁看到0x40，你应该能猜到内存在干什么了。

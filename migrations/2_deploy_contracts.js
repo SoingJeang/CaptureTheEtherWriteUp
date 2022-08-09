@@ -2,7 +2,7 @@
  * @Author: Soingjeang
  * @Date: 2022-07-19 16:28:16
  * @LastEditors: SoingJeang
- * @LastEditTime: 2022-08-03 16:18:10
+ * @LastEditTime: 2022-08-05 19:52:01
  * @FilePath: \CapTheEther\migrations\2_deploy_contracts.js
  */
 const ethers = require('ethers')
