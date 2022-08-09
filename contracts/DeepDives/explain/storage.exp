@@ -1,0 +1,4 @@
+event FunctionCalldata(bytes);
+bytes memory functionCalldata = abi.encodeWithSignature("store(uint256)", 10)
+emit FunctionCalldata(functionCalldata)
+address(storageContract).call(functionCalldata);
